@@ -1,11 +1,12 @@
-from threading import RLock
 from copy import deepcopy
+from threading import RLock
+
 
 class Topology:
     _topology = dict()
     _lock = RLock()
 
-    def __init__(self, _network_conf = None):
+    def __init__(self, _network_conf=None):
         self._topo = dict()
         self.sender = set()
         self.receiver = set()
@@ -19,9 +20,9 @@ class Topology:
                 self.receiver.add(node2)
                 if i_time in self._topo:
                     self._topo[i_time] = (self._topo[i_time]
-                                        + [(status,node1,node2)])
+                                          + [(status, node1, node2)])
                 else:
-                    self._topo[i_time] = [(status,node1,node2)]
+                    self._topo[i_time] = [(status, node1, node2)]
 
     def _add_link(self, node1, node2):
         """Add specific link to _topology."""
@@ -42,7 +43,7 @@ class Topology:
     def update(self, timestamp):
         self._lock.acquire()
         try:
-            for status,node1,node2 in self._topo[timestamp]:
+            for status, node1, node2 in self._topo[timestamp]:
                 if status == 'UP':
                     self._add_link(node1, node2)
                     pass
@@ -69,14 +70,14 @@ class Topology:
         return current_topology
 
 
-
 def main():
     t = Topology()
     print("Topology file is parsed as:\n{}\n".format(t._topo))
     for i in t._topo:
         t.update(i)
         print("Topology at timestamp {} is:\n{}\n".format(i,
-            t._topology))
+                                                          t._topology))
+
 
 if __name__ == '__main__':
     main()

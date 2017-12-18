@@ -1,10 +1,12 @@
 from threading import RLock
 
+
 class Clock(object):
     """ A Singlton clock.
     Based on [The Singleton](https://goo.gl/T3kxkR)
     """
     __instance = None
+
     def __new__(cls):
         if Clock.__instance is None:
             Clock.__instance = object.__new__(cls)
@@ -36,6 +38,7 @@ class Clock(object):
         finally:
             self.lock.release()
 
+
 def main():
     c = Clock()
     print(c.time)
@@ -46,6 +49,7 @@ def main():
     cp.tick()
     print(c.time, cp.time)
     print(Clock().tick().time)
+
 
 if __name__ == '__main__':
     main()
