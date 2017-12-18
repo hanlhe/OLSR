@@ -53,7 +53,6 @@ class Node:
         self.fromfilename = 'from' + self.nid + '.txt'
         self.tofilename = 'to' + self.nid + '.txt'
         self.receivefilename = self.nid + 'received.txt'
-        # args=())
         self.__message_processor__ = {'HELLO': self.__receive_hello__,
                                       'TC': self.__receive_tc__,
                                       'DATA': self.__receive_data__}
@@ -74,7 +73,6 @@ class Node:
     __hello__ = '* {} HELLO UNIDIR {} BIDIR {} MPR {}\n'
 
     def __send_hello__(self):
-        # print("send hello")
         sender = self.nid
         unidir = ' '.join(map(str, self.__route__.unidir))
         bidir = ' '.join(map(str, self.__route__.bidir))
@@ -84,27 +82,20 @@ class Node:
         with open(self.fromfilename, 'a') as from_me:
             from_me.write(hello)
 
-    # __tc__ = '* {} TC {} {} MS {} TTL {}\n'
     __tc__ = '* {} TC {} {} MS {}\n'
 
     def __send_tc__(self):
-        # print("send tc")
         sender = self.nid
         source = self.nid
         seqno = self.__route__.ms_seqno
         ms = ' '.join(map(str, self.__route__.ms))
-        # Previous Design with TTL in TC message.
-        # ttl     = '10'
-        # tc = self.__tc__.format(sender, source, seqno, ms, ttl)
         tc = self.__tc__.format(sender, source, seqno, ms)
-        # print(tc)
         with open(self.fromfilename, 'a') as from_me:
             from_me.write(tc)
 
     __data__ = '{} {} DATA {} {} {}\n'
 
     def __send_data__(self):
-        # print("send data")
         next_hop = self.__route__.get_route(self.dst)
 
         # If next_hop is not None, send message to that node.
@@ -114,7 +105,6 @@ class Node:
             dst = self.dst
             msg = self.msg
             data = self.__data__.format(next_hop, sender, originator, dst, msg)
-            # print(data)
             with open(self.fromfilename, 'a') as from_me:
                 from_me.write(data)
         # Otherwise, delay the message for 30 seconds.
@@ -125,7 +115,6 @@ class Node:
         self.__route__.check_timeout()
 
     def __follow_to_file__(self):
-        # print('start following ' + self.tofilename)
         try:
             open(self.tofilename, 'r').close()
         except IOError:
@@ -140,18 +129,13 @@ class Node:
                 yield line
 
     def __receive_hello__(self, msg):
-        # print("Received " + msg)
         with open(self.receivefilename, 'a') as received:
             received.write(msg)
         msg = msg[:-1]
-        # print(self.nid + " received " + msg +'%')
         neighbor = msg[2]
         unidir, rest = msg.split('UNIDIR ')[1].split(' BIDIR ')
-        # print(unidir)
-        # print(rest+'%')
         bidir, mpr = rest.split(' MPR ')
         to_set = lambda x: set() if x == '' else set(x.split(' '))
-        # print(neighbor, to_set(unidir), to_set(bidir), to_set(mpr))
         self.__route__.hello_update(neighbor,
                                     to_set(unidir),
                                     to_set(bidir),
@@ -161,12 +145,9 @@ class Node:
         with open(self.receivefilename, 'a') as received:
             received.write(msg)
         msg = msg[:-1]
-        # print(self.nid + " received " + msg + '%')
         neighbor = msg[2]
         s, ms = msg.split(' TC ')[1].split(' MS ')
         source, seqno = s.split(' ')
-        # ms, ttl = rest.split(' TTL ')
-        # ttl = int(ttl)
 
         # If the TC message was originated by the node itself, discard it.
         if source == self.nid:
@@ -183,7 +164,6 @@ class Node:
             self.__msg_cache__[source] = seqno
 
         to_set = lambda x: set() if x == '' else set(x.split(' '))
-        # print(neighbor, source, to_set(ms), seqno)
         self.__route__.tc_update(source, to_set(ms), int(seqno))
 
         # Forward message if node itself is sender's mpr and TTL is greater
@@ -196,7 +176,6 @@ class Node:
     def __receive_data__(self, msg):
         with open(self.receivefilename, 'a') as received:
             received.write(msg)
-        # print(self.nid + " received data: " + msg)
         msg_list = msg[:-1].split(' ')
 
         # If current node is the destination of the message, no further
@@ -228,15 +207,6 @@ class Node:
             (self.__executor__.submit(self.__follow_to_file__)).result()
         self.__executor__.submit(self.__msg_processor__)
         while self.time <= 122:
-            # if self.nid == '1':
-            # print(self.__route__.two_hop)
-            # print(self.__route__.bidir)
-            # print(self.__route__.unidir)
-            # print(self.__route__.mpr)
-            # print(self.__route__.ms)
-            # print(self.__route__.topo_tuple)
-            # print(self.__route__.route)
-            # print(self.__clock__.time)
             self.__executor__.submit(self.__check_timeout__)
 
             # Send message at specific timestamp.
@@ -258,8 +228,6 @@ class Node:
 
             sleep(1)
             self.tick()
-        # self.__executor__.shutdown(False)
-        # print("executor shutdown");
         self.__terminate__ = True
         sleep(1)
 
@@ -269,7 +237,6 @@ def main():
         c = Node(argv[1], argv[2], argv[3], int(argv[4]))
     else:
         c = Node(argv[1])
-    # print(c.nid, c.msg, c.timestamp, c.__route__)
     c.start()
     print("Node {} end.".format(argv[1]))
 

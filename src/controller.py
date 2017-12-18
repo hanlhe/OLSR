@@ -44,11 +44,6 @@ class Controller:
         self.topology = Topology(_network_conf)
         self._update_topology_thread = Thread(target=self._update_topology,
                                               args=())
-        # print("Topology file is parsed as:\n{}\n".format(self.topology.topo))
-        # for i in self.topology.topo:
-        # self.topology.update(i)
-        # print("Topology at timestamp {} is:\n{}\n".format(i,
-        # self.topology.get_current_topology()))
 
     def _update_topology(self):
         for i in range(125):
